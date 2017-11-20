@@ -7,8 +7,9 @@
     "dev": "concurrently \"nodemon start.js\" \"webpack -w\""
   },
   "dependencies": {
-    "express": "^4.13.3",
-    "body-parser": "^1.13.3"
+    "axios": "^0.17.1",
+    "body-parser": "^1.13.3",
+    "express": "^4.13.3"
   },
   "devDependencies": {
     "nodemon": "^1.12.1",
