@@ -1,0 +1,19 @@
+.body {
+  margin: 20px;
+}
+
+.QueryContainer {
+  display: grid;
+  grid-template-columns: 50% 50%
+}
+
+.query-scentence {
+  display: flex;
+  border: 2px solid black;
+  border-radius: 25px;
+  height: 50px;
+  width: 100%;
+  padding-left: 10px;
+  font-size: 24px;
+  align-items: center;
+}
