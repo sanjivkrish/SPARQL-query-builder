@@ -1,22 +1,17 @@
 {
-  "name": "sparql-query-builder",
-  "version": "0.0.1",
-  "main": "app.js",
-  "scripts": {
-    "start": "node start.js",
-    "dev": "concurrently \"nodemon start.js\" \"webpack -w\""
-  },
+  "name": "my-app",
+  "version": "0.1.0",
+  "private": true,
   "dependencies": {
     "axios": "^0.17.1",
-    "body-parser": "^1.13.3",
-    "express": "^4.13.3"
+    "react": "^16.1.1",
+    "react-dom": "^16.1.1",
+    "react-scripts": "1.0.17"
   },
-  "devDependencies": {
-    "nodemon": "^1.12.1",
-    "webpack": "^3.8.1",
-    "babel-core": "^6.26.0",
-    "babel-loader": "^7.1.2",
-    "babel-preset-es2015": "^6.24.1",
-    "concurrently": "^3.5.0"
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
   }
 }
