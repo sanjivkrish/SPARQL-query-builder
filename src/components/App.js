@@ -15,7 +15,7 @@ class App extends React.Component {
 
     this.state = {
       endpoint: 'http://live.dbpedia.org/sparql',
-      scentence: 'Give me...',
+      sentence: 'Give me...',
       classResults: [],
       propertyResults: []
     }
@@ -36,7 +36,7 @@ class App extends React.Component {
         <Header />
         <div className="body">
           <div className="query-scentence">
-            {this.state.scentence}
+            {this.state.sentence}
           </div>
           <div className="QueryContainer">
             <Query 

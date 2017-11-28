@@ -46,15 +46,9 @@ class Query extends React.Component {x
       .then((res) => res.data.results.bindings)
       .then((data) => this.props.setResults(data.map( d => {
         switch (this.props.queryType) {
-          case 'Class': {
-            const url = d.class.value.split('/')
-            return url[url.length-1]
-          }
-          case 'Property': {
-            const url = d.prop.value.split('/')
-            return url[url.length-1]
-          }
-          default: return d
+          case 'Class': return d.class.value
+          case 'Property': return d.prop.value
+          default: return
         } 
       })))
   }
@@ -67,7 +61,9 @@ class Query extends React.Component {x
         <input ref={(input) => this.input = input} type="text" onInput={throttle(this.executeQuery, 100)}/>
         <div className="query-results">
           {results.map( res => {
-              return <div className="result" key={res} onClick={this.selectResult} >{res}</div>
+              const url = res.split('/')
+              const word = url[url.length - 1]
+              return <div className="result" key={word} onClick={this.selectResult} >{word}</div>
             })
           }
         </div>
