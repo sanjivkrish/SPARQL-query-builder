@@ -3,30 +3,17 @@ import React from 'react';
 import '../css/App.css'
 import '../css/Concept.css'
 import Concept from './Concept'
-import Header from './Header'
 
 class App extends React.Component {
-  
-  constructor() {
-    super()
-
-    this.state = {
-      endpoint: 'http://live.dbpedia.org/sparql',
-      sentence: 'Give me...'
-    }
-  }
   
   render() {
     return (
       <div className="App">
-        <Header />
+        <div className="Header">
+          <h2 className="title">SPARQL Query Builder</h2>
+        </div>
         <div className="body">
-          <div className="query-sentence">
-            {this.state.sentence}
-          </div>
-          <Concept
-            endpoint={this.state.endpoint}
-          />
+          <Concept />
         </div>
       </div>
     );

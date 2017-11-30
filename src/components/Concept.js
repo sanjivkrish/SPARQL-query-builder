@@ -11,27 +11,24 @@ class Concept extends React.Component {
     super()
 
     this.state = {
+      endpoint: 'http://live.dbpedia.org/sparql',
+      sentence: 'Give me...',
       classResults: [],
       propertyResults: []
     }
-    
-    this.executeQuery = this.executeQuery.bind(this)
-    this.selectClass = this.selectClass.bind(this)
-    this.selectProperty = this.selectProperty.bind(this)
-    this.updateSuggestion = this.updateSuggestion.bind(this)
   }
 
-  selectClass(e) {
+  selectClass = (e) => {
     // When a class entity is clicked
   }
 
-  selectProperty(e) {
+  selectProperty = (e) => {
     // When a property entity is clicked
   }
 
-  executeQuery(query) {
-    axios({
-      url: this.props.endpoint,
+  executeQuery = (query) => {
+    return axios({
+      url: this.state.endpoint,
       method: 'POST',
       headers: {
         'Accept': 'application/sparql-results+json',
@@ -39,58 +36,64 @@ class Concept extends React.Component {
       },
       params: { query } // using params instead of data because of urlencoded data
     })
-      .then((res) => res.data.results.bindings)
-      .then((data) => {
-        //
-        // Check if data belongs to class/property query by inspecting first element
-        //
-        if (Array.isArray(data) && data[0].hasOwnProperty('class')) {
-          this.setState({classResults : data.map( d => {
-            return d.class.value
-          })})
-        } else {
-          this.setState({propertyResults : data.map( d => {
-            return d.prop.value
-          })})
-        }
+      .then((res) => {
+        // console.log(res)
+        return res.data.results.bindings
       })
+      .catch( err => console.log(err) )
   }
 
-  updateSuggestion() {
+  updateSuggestion = () => {
     if (this.input.value === '') {
-      this.setState({classResults : []})
-      this.setState({propertyResults : []})
+      this.setState({
+        classResults : [],
+        propertyResults: []
+      })
       return
     }
 
-    let classQuery = constructClassQuery(this.input.value)
-    let propertyQuery = constructPropertyQuery(this.input.value)
+    const classQuery = constructClassQuery(this.input.value)
+    const propertyQuery = constructPropertyQuery(this.input.value)
 
-    this.executeQuery(classQuery)
-    this.executeQuery(propertyQuery)
+    const classPromise = this.executeQuery(classQuery)
+    const propertyPromise = this.executeQuery(propertyQuery)
+
+    Promise.all([classPromise, propertyPromise])
+      .then(([classes, properties]) => {
+        const classResults = classes.map( c => c.class.value )
+        const propertyResults = properties.map( p => p.prop.value )
+        this.setState({
+          classResults,
+          propertyResults
+        })
+      })
+      .catch( err => console.error(err) )
   }
   
   render() {
     return (
       <div>
-      <h2>Concepts</h2>
-      <input className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 100)}/>
-      <div className="ConceptContainer">
-        <div className="Concept">
-          <h4>Class</h4>
-          <Suggestion
-            suggestionList={this.state.classResults}
-            onItemSelect={this.selectClass}
-          />
+        <div className="query-sentence">
+          {this.state.sentence}
         </div>
-        <div className="Concept">
-        <h4>Property</h4>
-          <Suggestion
-            suggestionList={this.state.propertyResults}
-            onItemSelect={this.selectProperty}
-          />
+        <h2>Concepts</h2>
+        <input className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 100)}/>
+        <div className="ConceptContainer">
+          <div className="Concept">
+            <h4>Class</h4>
+            <Suggestion
+              suggestionList={this.state.classResults}
+              onItemSelect={this.selectClass}
+            />
+          </div>
+          <div className="Concept">
+          <h4>Property</h4>
+            <Suggestion
+              suggestionList={this.state.propertyResults}
+              onItemSelect={this.selectProperty}
+            />
+          </div>
         </div>
-      </div>
       </div>
     )
   }
