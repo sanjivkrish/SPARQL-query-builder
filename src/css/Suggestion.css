@@ -10,3 +10,8 @@
 .suggestion-item {
     margin: 2px;
 }
+
+.suggestion-item:hover {
+    background: yellow;
+    cursor: pointer;
+}

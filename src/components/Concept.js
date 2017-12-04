@@ -6,29 +6,20 @@ import Suggestion from './Suggestion'
 import '../css/Concept.css'
 
 class Concept extends React.Component {
-  
-  constructor() {
-    super()
-
-    this.state = {
-      endpoint: 'http://live.dbpedia.org/sparql',
-      sentence: 'Give me...',
-      classResults: [],
-      propertyResults: []
-    }
-  }
 
   selectClass = (e) => {
     // When a class entity is clicked
+    this.props.addClassToQuery(e.target.innerText)
   }
 
   selectProperty = (e) => {
     // When a property entity is clicked
+    this.props.addPropertyToQuery(e.target.innerText)  
   }
 
   executeQuery = (query) => {
     return axios({
-      url: this.state.endpoint,
+      url: this.props.endpoint,
       method: 'POST',
       headers: {
         'Accept': 'application/sparql-results+json',
@@ -45,9 +36,9 @@ class Concept extends React.Component {
 
   updateSuggestion = () => {
     if (this.input.value === '') {
-      this.setState({
-        classResults : [],
-        propertyResults: []
+      this.props.setSuggestions({
+        classSuggestions: [],
+        propertySuggestions: []
       })
       return
     }
@@ -60,11 +51,11 @@ class Concept extends React.Component {
 
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
-        const classResults = classes.map( c => c.class.value )
-        const propertyResults = properties.map( p => p.prop.value )
-        this.setState({
-          classResults,
-          propertyResults
+        const classSuggestions = classes.map( c => c.class.value )
+        const propertySuggestions = properties.map( p => p.prop.value )
+        this.props.setSuggestions({
+          classSuggestions,
+          propertySuggestions
         })
       })
       .catch( err => console.error(err) )
@@ -73,23 +64,20 @@ class Concept extends React.Component {
   render() {
     return (
       <div>
-        <div className="query-sentence">
-          {this.state.sentence}
-        </div>
         <h2>Concepts</h2>
         <input className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 100)}/>
         <div className="ConceptContainer">
           <div className="Concept">
             <h4>Class</h4>
             <Suggestion
-              suggestionList={this.state.classResults}
+              suggestionList={this.props.classSuggestions}
               onItemSelect={this.selectClass}
             />
           </div>
           <div className="Concept">
           <h4>Property</h4>
             <Suggestion
-              suggestionList={this.state.propertyResults}
+              suggestionList={this.props.propertySuggestions}
               onItemSelect={this.selectProperty}
             />
           </div>
@@ -97,7 +85,6 @@ class Concept extends React.Component {
       </div>
     )
   }
- 
 }
 
 export default Concept
