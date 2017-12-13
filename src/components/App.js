@@ -8,22 +8,20 @@ class App extends React.Component {
   
   state = {
     endpoint: 'http://live.dbpedia.org/sparql',
-    query: {
-      classes: [],
-      properties: [],
-      literals: []
-    },
+    query: [],
     classSuggestions: [],
     propertySuggestions: []
   }
 
   addClassToQuery = (newClass) => {
     const query = this.state.query
-    if (query.classes.indexOf(newClass) !== -1) {
-      // prevent duplicates
-      return
-    } 
-    query.classes.push(newClass)
+    const newElem = {
+      type  : 'class',
+      value :  newClass
+    }
+
+    query.push(newElem)
+
     this.setState({
       query
     })
@@ -31,21 +29,18 @@ class App extends React.Component {
 
   removeClassFromQuery = (rClass) => {
     const query = this.state.query
-    const i = query.classes.indexOf(rClass)
-    if (i === -1) return
-    query.classes.splice(i, 1)
-    this.setState({
-      query
-    })
+    // TODO
   }
 
   addPropertyToQuery = (newProperty) => {
     const query = this.state.query
-    if (query.properties.indexOf(newProperty) !== -1) {
-      // prevent duplicates
-      return
+    const newElem = {
+      type  : 'property',
+      value :  newProperty
     }
-    query.properties.push(newProperty)
+
+    query.push(newElem)
+
     this.setState({
       query
     })
@@ -53,14 +48,7 @@ class App extends React.Component {
 
   addLiteralToQuery = (newLiteral) => {
     const query = this.state.query
-    if (query.literals.indexOf(newLiteral) !== -1) {
-      // prevent duplicates
-      return
-    }
-    query.literals.push(newLiteral)
-    this.setState({
-      query
-    })
+    // TODO
   }
 
   handleQueryElementClick = (e) => {
@@ -108,7 +96,7 @@ class App extends React.Component {
         </div>
         <div className="body">
           <div className="query-sentence">
-            {this.translateQuery()}
+            //TODO
           </div>
           <Concept
             endpoint={this.state.endpoint}
@@ -117,7 +105,6 @@ class App extends React.Component {
             setSuggestions={this.setSuggestions}
             addClassToQuery={this.addClassToQuery}
             addPropertyToQuery={this.addPropertyToQuery}
-            addLiteralToQuery={this.addLiteralToQuery}
           />
         </div>
       </div>
