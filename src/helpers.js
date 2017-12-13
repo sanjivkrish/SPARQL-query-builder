@@ -1,3 +1,6 @@
+import sparqljs from 'sparqljs'
+import axios from 'axios'
+
 export const throttle = (callback, delay) => {
   let previousCall = new Date().getTime();
   return function() {
@@ -37,4 +40,81 @@ export const constructPropertyQuery = (string) => {
     FILTER ( !( REGEX(str(?prop), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 
+}
+
+export const formatResultQuery = (inputQuery) => {
+  let SparqlGenerator = sparqljs.Generator;
+  let generator = new SparqlGenerator();
+
+  let query = {
+    "type": "query",
+    "prefixes": {
+        "dbo": "http://dbpedia.org/ontology/",
+        "dbr": "http://dbpedia.org/resource/"
+    },
+    "queryType": "SELECT",
+    "distinct": true,
+    "variables": ["?0"],
+    "where": [
+      {
+          "type": "bgp",
+          "triples": []
+      }
+    ],
+    "limit":  200
+  }
+
+  let variableCount = 0;
+
+  inputQuery.forEach(function(elem, idx) {
+    if (elem.type === 'class') {
+      let rdf = {
+        subject : query.variables[query.variables.length-1],
+        predicate : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        object : "http://dbpedia.org/ontology/" + elem.value
+      }
+
+      query.where[0].triples.push(rdf);
+    }
+
+    if (elem.type === 'property') {
+      if (inputQuery[idx-1].type === 'class') {
+        variableCount++;
+      } else {
+        query.variables.push("?"+(variableCount+1));
+      }
+
+      let rdf = {
+        subject : query.variables[query.variables.length-1],
+        predicate : "http://dbpedia.org/ontology/" + elem.value,
+        object : "?" + (variableCount)
+      }
+
+      if (inputQuery[idx-1].type === 'class') {
+        query.variables.push(rdf.object);
+      }
+
+      query.where[0].triples.push(rdf);
+    }
+  })
+
+  let generatedQuery = generator.stringify(query);
+  return generatedQuery;
+}
+
+export const executeQuery = (endpoint, query) => {
+  return axios({
+      url: endpoint,
+      method: 'POST',
+      headers: {
+      'Accept': 'application/sparql-results+json',
+      'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      params: { query } // using params instead of data because of urlencoded data
+  })
+  .then((res) => {
+      // console.log(res)
+      return res.data.results.bindings
+  })
+  .catch( err => console.log(err) )
 }
