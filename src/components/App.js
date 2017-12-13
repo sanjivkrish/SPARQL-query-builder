@@ -72,11 +72,21 @@ class App extends React.Component {
       <span>Give me
         {
           this.state.query.classes.map( (c, i) => {
+            let spanEle;
+
             switch (i) {
-              case 0: return <span key={c}> every <mark onClick={this.handleQueryElementClick}>{c}</mark> </span>; break;
-              case 1: return <span key={c}> that is also a <mark onClick={this.handleQueryElementClick}>{c}</mark> </span>; break;
-              default: return <span key={c}> and a <mark onClick={this.handleQueryElementClick}>{c}</mark> </span>; break;
+              case 0:
+                spanEle = <span key={c}> every <mark onClick={this.handleQueryElementClick}>{c}</mark></span>;
+                break;
+              case 1:
+                spanEle = <span key={c}> that is also a <mark onClick={this.handleQueryElementClick}>{c}</mark></span>;
+                break;
+              default:
+                spanEle = <span key={c}> and a <mark onClick={this.handleQueryElementClick}>{c}</mark></span>;
+                break;
             }
+
+            return spanEle;
           })
         }
       </span>
