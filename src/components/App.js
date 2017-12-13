@@ -1,16 +1,31 @@
 import React from 'react';
+import { executeQuery, formatResultQuery } from '../helpers'
 
 import '../css/App.css'
 import '../css/Concept.css'
+import '../css/Result.css'
 import Concept from './Concept'
+import Result from './Result'
 
 class App extends React.Component {
   
   state = {
     endpoint: 'http://live.dbpedia.org/sparql',
-    query: [],
+    query: [{value:'hi'}],
     classSuggestions: [],
-    propertySuggestions: []
+    propertySuggestions: [],
+    resultList: []
+  }
+
+  executeResultQuery = () => {
+    let query = formatResultQuery(this.state.query);
+    executeQuery(this.state.endpoint, query)
+      .then((result) => {
+        this.setState({
+          resultList: result
+        })
+      })
+
   }
 
   addClassToQuery = (newClass) => {
@@ -23,8 +38,12 @@ class App extends React.Component {
     query.push(newElem)
 
     this.setState({
-      query
+      query,
+      classSuggestions : [],
+      propertySuggestions : []
     })
+
+    this.executeResultQuery();
   }
 
   removeClassFromQuery = (rClass) => {
@@ -42,8 +61,12 @@ class App extends React.Component {
     query.push(newElem)
 
     this.setState({
-      query
+      query,
+      classSuggestions : [],
+      propertySuggestions : []
     })
+
+    this.executeResultQuery();
   }
 
   addLiteralToQuery = (newLiteral) => {
@@ -88,6 +111,12 @@ class App extends React.Component {
     })
   }
 
+  setResultList = (resultList) => {
+    this.setState({
+      resultList
+    })
+  }
+
   render() {
     return (
       <div className="App">
@@ -105,6 +134,9 @@ class App extends React.Component {
             setSuggestions={this.setSuggestions}
             addClassToQuery={this.addClassToQuery}
             addPropertyToQuery={this.addPropertyToQuery}
+          />
+          <Result
+            resultList={this.state.resultList}
           />
         </div>
       </div>
