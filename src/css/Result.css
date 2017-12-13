@@ -1,0 +1,12 @@
+.result-box {
+    border: 2px solid black;
+    margin-right: 20px;
+    margin-top: 20px;
+    padding: 10px;
+    height: 200px;
+    overflow-y: auto;
+}
+
+.result-item {
+    margin: 2px;
+}
