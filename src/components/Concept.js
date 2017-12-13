@@ -1,7 +1,6 @@
 import React from 'react'
-import axios from 'axios'
 
-import { throttle, constructClassQuery, constructPropertyQuery } from '../helpers'
+import { throttle, constructClassQuery, constructPropertyQuery, executeQuery } from '../helpers'
 import Suggestion from './Suggestion'
 import '../css/Concept.css'
 
@@ -10,28 +9,13 @@ class Concept extends React.Component {
   selectClass = (e) => {
     // When a class entity is clicked
     this.props.addClassToQuery(e.target.innerText)
+    document.getElementById('conceptBox').value = "";
   }
 
   selectProperty = (e) => {
     // When a property entity is clicked
-    this.props.addPropertyToQuery(e.target.innerText)  
-  }
-
-  executeQuery = (query) => {
-    return axios({
-      url: this.props.endpoint,
-      method: 'POST',
-      headers: {
-        'Accept': 'application/sparql-results+json',
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      params: { query } // using params instead of data because of urlencoded data
-    })
-      .then((res) => {
-        // console.log(res)
-        return res.data.results.bindings
-      })
-      .catch( err => console.log(err) )
+    this.props.addPropertyToQuery(e.target.innerText)
+    document.getElementById('conceptBox').value = "";
   }
 
   updateSuggestion = () => {
@@ -46,8 +30,8 @@ class Concept extends React.Component {
     const classQuery = constructClassQuery(this.input.value)
     const propertyQuery = constructPropertyQuery(this.input.value)
 
-    const classPromise = this.executeQuery(classQuery)
-    const propertyPromise = this.executeQuery(propertyQuery)
+    const classPromise = executeQuery(this.props.endpoint, classQuery)
+    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery)
 
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
@@ -65,7 +49,7 @@ class Concept extends React.Component {
     return (
       <div>
         <h2>Concepts</h2>
-        <input className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 100)}/>
+        <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 100)}/>
         <div className="ConceptContainer">
           <div className="Concept">
             <h4>Class</h4>
