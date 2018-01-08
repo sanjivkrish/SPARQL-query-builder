@@ -21,7 +21,7 @@ export const constructClassQuery = (string) => {
   WHERE { 
     { ?class a rdfs:Class } 
     UNION { ?class a owl:Class }
-    FILTER ( REGEX(str(?class), "${string}", 'i') )
+    FILTER ( REGEX(str(?class), "http://dbpedia.org/ontology/.*${string}", 'i') )
     FILTER ( !( REGEX(str(?class), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 
@@ -36,7 +36,7 @@ export const constructPropertyQuery = (string) => {
     { ?prop a rdf:Property }
     UNION { ?prop a owl:ObjectProperty }
     UNION { ?prop a owl:DatatypeProperty }
-    FILTER ( REGEX(str(?prop), "${string}", 'i') )
+    FILTER ( REGEX(str(?prop), "http://dbpedia.org/property/.*${string}", 'i') )
     FILTER ( !( REGEX(str(?prop), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 
