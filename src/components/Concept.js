@@ -49,7 +49,7 @@ class Concept extends React.Component {
     return (
       <div>
         <h2>Concepts</h2>
-        <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 100)}/>
+        <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 500)}/>
         <div className="ConceptContainer">
           <div className="Concept">
             <h4>Class</h4>

@@ -11,7 +11,7 @@ class App extends React.Component {
   
   state = {
     endpoint: 'http://live.dbpedia.org/sparql',
-    query: [{value:'hi'}],
+    query: [],
     classSuggestions: [],
     propertySuggestions: [],
     resultList: []

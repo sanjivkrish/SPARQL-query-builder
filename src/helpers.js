@@ -3,12 +3,20 @@ import axios from 'axios'
 
 export const throttle = (callback, delay) => {
   let previousCall = new Date().getTime();
+  let timeoutIsRunning = false
   return function() {
     let currentCall = new Date().getTime();
-
     if ((currentCall - previousCall) >= delay) {
       previousCall = currentCall;
       callback.apply(null, arguments);
+    } else {
+      if (!timeoutIsRunning) {
+        setTimeout(() => {
+          callback.apply(null, arguments)
+          timeoutIsRunning = false
+        }, delay)
+        timeoutIsRunning = true
+      }
     }
   };
 }
@@ -105,7 +113,7 @@ export const formatResultQuery = (inputQuery) => {
 export const executeQuery = (endpoint, query) => {
   return axios({
       url: endpoint,
-      method: 'POST',
+      method: 'GET',
       headers: {
       'Accept': 'application/sparql-results+json',
       'Content-Type': 'application/x-www-form-urlencoded'
