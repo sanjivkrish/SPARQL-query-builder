@@ -21,7 +21,7 @@ export const throttle = (callback, delay) => {
   };
 }
 
-export const constructClassQuery = (string) => {
+export const constructClassQuery = (string, sensitive, wholeWord) => {
   return `
   PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -29,13 +29,13 @@ export const constructClassQuery = (string) => {
   WHERE { 
     { ?class a rdfs:Class } 
     UNION { ?class a owl:Class }
-    FILTER ( REGEX(str(?class), "http://dbpedia.org/ontology/.*${string}", 'i') )
+    FILTER ( REGEX(str(?class), "http://dbpedia.org/ontology/${wholeWord ? `${string}$` : `.*${string}`}", '${sensitive ? '' : 'i'}') )
     FILTER ( !( REGEX(str(?class), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 
 }
 
-export const constructPropertyQuery = (string) => {
+export const constructPropertyQuery = (string, sensitive, wholeWord) => {
   return `
   PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
@@ -44,7 +44,7 @@ export const constructPropertyQuery = (string) => {
     { ?prop a rdf:Property }
     UNION { ?prop a owl:ObjectProperty }
     UNION { ?prop a owl:DatatypeProperty }
-    FILTER ( REGEX(str(?prop), "http://dbpedia.org/property/.*${string}", 'i') )
+    FILTER ( REGEX(str(?prop), "http://dbpedia.org/property/${wholeWord ? `${string}$` : `.*${string}`}", '${sensitive ? '' : 'i'}') )
     FILTER ( !( REGEX(str(?prop), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 

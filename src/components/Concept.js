@@ -26,9 +26,9 @@ class Concept extends React.Component {
       })
       return
     }
-
-    const classQuery = constructClassQuery(this.input.value)
-    const propertyQuery = constructPropertyQuery(this.input.value)
+    
+    const classQuery = constructClassQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
+    const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
 
     const classPromise = executeQuery(this.props.endpoint, classQuery)
     const propertyPromise = executeQuery(this.props.endpoint, propertyQuery)
@@ -50,6 +50,12 @@ class Concept extends React.Component {
       <div>
         <h2>Concepts</h2>
         <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 500)}/>
+        <span>
+          <input id="check-sensitive" class="checkbox" type="checkbox" ref={(input) => this.checkSensitive = input} onChange={throttle(this.updateSuggestion, 500)}></input>
+          <label>Case-sensitive</label>
+          <input id="check-whole" class="checkbox" type="checkbox" ref={(input) => this.checkWhole = input} onChange={throttle(this.updateSuggestion, 500)}></input>
+          <label>Whole word only</label>
+        </span>
         <div className="ConceptContainer">
           <div className="Concept">
             <h4>Class</h4>
