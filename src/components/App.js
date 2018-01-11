@@ -82,19 +82,17 @@ class App extends React.Component {
     return (
       <span>Give me
         {
-          this.state.query.classes.map( (c, i) => {
+          this.state.query.map( (c, i) => {
             let spanEle;
 
-            switch (i) {
-              case 0:
-                spanEle = <span key={c}> every <mark onClick={this.handleQueryElementClick}>{c}</mark></span>;
-                break;
-              case 1:
-                spanEle = <span key={c}> that is also a <mark onClick={this.handleQueryElementClick}>{c}</mark></span>;
-                break;
-              default:
-                spanEle = <span key={c}> and a <mark onClick={this.handleQueryElementClick}>{c}</mark></span>;
-                break;
+            if (c.type == 'class') {
+              if (i == 0) {
+                spanEle = <span key={c.value}> every <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+              } else {
+                spanEle = <span key={c.value}> that is also <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+              }
+            } else {
+              spanEle = <span key={c.value}> and a property <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
             }
 
             return spanEle;
@@ -125,7 +123,7 @@ class App extends React.Component {
         </div>
         <div className="body">
           <div className="query-sentence">
-            //TODO
+            {this.translateQuery()}
           </div>
           <Concept
             endpoint={this.state.endpoint}
