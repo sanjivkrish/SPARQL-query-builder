@@ -44,7 +44,7 @@ export const constructPropertyQuery = (string, sensitive, wholeWord) => {
     { ?prop a rdf:Property }
     UNION { ?prop a owl:ObjectProperty }
     UNION { ?prop a owl:DatatypeProperty }
-    FILTER ( REGEX(str(?prop), "http://dbpedia.org/property/${wholeWord ? `${string}$` : `.*${string}`}", '${sensitive ? '' : 'i'}') )
+    FILTER ( REGEX(str(?prop), "http://dbpedia.org/.*/${wholeWord ? `${string}$` : `.*${string}`}", '${sensitive ? '' : 'i'}') )
     FILTER ( !( REGEX(str(?prop), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 
