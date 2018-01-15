@@ -76,6 +76,7 @@ export const formatResultQuery = (inputQuery) => {
 
   inputQuery.forEach(function(elem, idx) {
     if (elem.type === 'class') {
+      // Element of type class
       let rdf = {
         subject : query.variables[query.variables.length-1],
         predicate : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
@@ -83,23 +84,36 @@ export const formatResultQuery = (inputQuery) => {
       }
 
       query.where[0].triples.push(rdf);
-    }
-
-    if (elem.type === 'property') {
+    } else if (elem.type === 'property' && (idx !== 0)) {
+      // Element of type property
       if (inputQuery[idx-1].type === 'class') {
+        // Element of type property on top of class
         variableCount++;
+
+        let rdf = {
+          subject : query.variables[query.variables.length-1],
+          predicate : "http://dbpedia.org/ontology/" + elem.value,
+          object : "?" + (variableCount)
+        }
+
+        if (inputQuery[idx-1].type === 'class') {
+          query.variables.push(rdf.object);
+        }
+
+        query.where[0].triples.push(rdf);
       } else {
-        query.variables.push("?"+(variableCount+1));
+        // Element of type property on top of property
       }
+
+    } else if (idx == 0) {
+      // First element as a property
+      query.variables.push("?"+(variableCount+1));
+      variableCount++;
 
       let rdf = {
-        subject : query.variables[query.variables.length-1],
-        predicate : "http://dbpedia.org/ontology/" + elem.value,
-        object : "?" + (variableCount)
-      }
-
-      if (inputQuery[idx-1].type === 'class') {
-        query.variables.push(rdf.object);
+        subject : query.variables[0],
+        predicate : "http://dbpedia.org/property/" + elem.value,
+        object : query.variables[1]
       }
 
       query.where[0].triples.push(rdf);

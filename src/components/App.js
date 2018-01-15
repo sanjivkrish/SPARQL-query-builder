@@ -97,7 +97,11 @@ class App extends React.Component {
                 spanEle = <span key={c.value}> that is also <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
               }
             } else {
-              spanEle = <span key={c.value}> and a property <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+              if (i === 0) {
+                spanEle = <span key={c.value}> everything that has a property <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+              } else {
+                spanEle = <span key={c.value}> and a property <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+              }
             }
 
             return spanEle;
