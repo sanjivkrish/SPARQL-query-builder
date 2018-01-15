@@ -1,20 +1,20 @@
 import React from 'react'
 
-import Suggestion from './Suggestion'
+// import Suggestion from './Suggestion'
 import '../css/Result.css'
 
 class Result extends React.Component {
     
     formatResult = (resultList) => {
         let result = [];
-        this.props.resultList.map((elem, idx) => {
+        this.props.resultList.forEach((elem, idx) => {
             if (!elem) {
                 return
             }
             let keys = Object.keys(elem);
 
             keys.forEach((key, index)=> {
-                if (result[index] == undefined) {
+                if (result[index] === undefined) {
                     result[index] = [];
                 }
 
@@ -28,7 +28,7 @@ class Result extends React.Component {
     selectResult = () => {}
 
     render() {
-        let list = this.formatResult(this.props.resultList);
+        // let list = this.formatResult(this.props.resultList);
 
         return(
             <div>

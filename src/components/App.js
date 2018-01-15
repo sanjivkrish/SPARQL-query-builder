@@ -48,7 +48,12 @@ class App extends React.Component {
 
   removeClassFromQuery = (rClass) => {
     const query = this.state.query
-    // TODO
+    const i = query.findIndex( x => x.value === rClass )
+    query.splice(i, 1)
+    this.setState({
+      query
+    })
+    this.executeResultQuery()
   }
 
   addPropertyToQuery = (newProperty) => {
@@ -70,7 +75,7 @@ class App extends React.Component {
   }
 
   addLiteralToQuery = (newLiteral) => {
-    const query = this.state.query
+    // const query = this.state.query
     // TODO
   }
 
@@ -85,8 +90,8 @@ class App extends React.Component {
           this.state.query.map( (c, i) => {
             let spanEle;
 
-            if (c.type == 'class') {
-              if (i == 0) {
+            if (c.type === 'class') {
+              if (i === 0) {
                 spanEle = <span key={c.value}> every <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
               } else {
                 spanEle = <span key={c.value}> that is also <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
