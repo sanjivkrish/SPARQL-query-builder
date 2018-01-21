@@ -10,3 +10,7 @@
 .body {
     margin: 20px;
 }
+
+mark:hover {
+    cursor: url(./x.ico) 8 8, auto;
+}
