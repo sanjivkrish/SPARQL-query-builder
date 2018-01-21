@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios'
 
 import { throttle, constructClassQuery, constructPropertyQuery, executeQuery } from '../helpers'
 import Suggestion from './Suggestion'
@@ -6,19 +7,21 @@ import '../css/Concept.css'
 
 class Concept extends React.Component {
 
-  selectClass = (e) => {
+  selectClass = (url) => {
     // When a class entity is clicked
-    this.props.addClassToQuery(e.target.innerText)
-    document.getElementById('conceptBox').value = "";
+    this.props.addClassToQuery(url)
+    this.input.value = "";
   }
 
-  selectProperty = (e) => {
+  selectProperty = (url) => {
     // When a property entity is clicked
-    this.props.addPropertyToQuery(e.target.innerText)
-    document.getElementById('conceptBox').value = "";
+    this.props.addPropertyToQuery(url)
+    this.input.value = "";
   }
 
   updateSuggestion = () => {
+    this.props.cancelToken.cancel('Request outdated') // Cancel previous requests
+
     if (this.input.value === '') {
       this.props.setSuggestions({
         classSuggestions: [],
@@ -27,14 +30,19 @@ class Concept extends React.Component {
       return
     }
     
+    
     const classQuery = constructClassQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
-    const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
+    const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked, this.props.query)
 
-    const classPromise = executeQuery(this.props.endpoint, classQuery)
-    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery)
-
+    const source = axios.CancelToken.source() // Create a new cancel token
+    this.props.setCancelToken(source); // Update state
+    const classPromise = executeQuery(this.props.endpoint, classQuery, source.token)
+    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery, source.token)
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
+        if (classes === undefined || properties === undefined) {
+          return
+        }
         const classSuggestions = classes.map( c => c.class.value )
         const propertySuggestions = properties.map( p => p.prop.value )
         this.props.setSuggestions({
@@ -52,9 +60,9 @@ class Concept extends React.Component {
         <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 500)}/>
         <span>
           <input id="check-sensitive" className="checkbox" type="checkbox" ref={(input) => this.checkSensitive = input} onChange={throttle(this.updateSuggestion, 500)}></input>
-          <label>Case-sensitive</label>
+          <label onClick={() => this.checkSensitive.click()}>Case-sensitive</label>
           <input id="check-whole" className="checkbox" type="checkbox" ref={(input) => this.checkWhole = input} onChange={throttle(this.updateSuggestion, 500)}></input>
-          <label>Whole word only</label>
+          <label onClick={() => this.checkWhole.click()}>Whole word only</label>
         </span>
         <div className="ConceptContainer">
           <div className="Concept">

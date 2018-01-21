@@ -9,7 +9,7 @@ class Suggestion extends React.Component {
             {this.props.suggestionList.map( (res,idx) => {
                 const url = res.split('/')
                 const word = url[url.length - 1]
-                return <div className="suggestion-item" key={idx} onClick={this.props.onItemSelect} >{word}</div>
+                return <div className="suggestion-item" key={idx} onClick={() => this.props.onItemSelect(res)} >{word}</div>
                 })
             }
             </div>

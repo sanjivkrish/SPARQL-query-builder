@@ -29,23 +29,32 @@ export const constructClassQuery = (string, sensitive, wholeWord) => {
   WHERE { 
     { ?class a rdfs:Class } 
     UNION { ?class a owl:Class }
-    FILTER ( REGEX(str(?class), "http://dbpedia.org/ontology/${wholeWord ? `${string}$` : `.*${string}`}", '${sensitive ? '' : 'i'}') )
+    FILTER ( REGEX(str(?class), "http://dbpedia.org/.*/${wholeWord ? `${string}$` : `.*${string}`}" ${sensitive ? '' : ', "i"'}) )
     FILTER ( !( REGEX(str(?class), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
   }
   LIMIT 200` 
 }
 
-export const constructPropertyQuery = (string, sensitive, wholeWord) => {
+export const constructPropertyQuery = (string, sensitive, wholeWord, query) => {
   return `
   PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
   SELECT DISTINCT ?prop
   WHERE { 
-    { ?prop a rdf:Property }
-    UNION { ?prop a owl:ObjectProperty }
-    UNION { ?prop a owl:DatatypeProperty }
-    FILTER ( REGEX(str(?prop), "http://dbpedia.org/.*/${wholeWord ? `${string}$` : `.*${string}`}", '${sensitive ? '' : 'i'}') )
-    FILTER ( !( REGEX(str(?prop), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", 'i') ) )
+    ${
+      query.length === 0 ?
+      `{ ?prop a rdf:Property }
+      UNION { ?prop a owl:ObjectProperty }
+      UNION { ?prop a owl:DatatypeProperty }` :
+      query
+        .filter( x => x.type === 'class')
+        .map( x => `?thing a <${x.value}>.`)
+        .join('\n')
+        + '\n?thing ?prop ?value.'
+    }
+    
+    FILTER ( REGEX(str(?prop), "http://.*/.*/${wholeWord ? `${string}$` : `.*${string}`}" ${sensitive ? '' : ', "i"'}) )
+    FILTER ( !( REGEX(str(?prop), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", "i") ) )
   }
   LIMIT 200` 
 }
@@ -80,7 +89,7 @@ export const formatResultQuery = (inputQuery) => {
       let rdf = {
         subject : query.variables[query.variables.length-1],
         predicate : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object : "http://dbpedia.org/ontology/" + elem.value
+        object : elem.value // "http://dbpedia.org/ontology/" + elem.value
       }
 
       query.where[0].triples.push(rdf);
@@ -92,7 +101,7 @@ export const formatResultQuery = (inputQuery) => {
 
         let rdf = {
           subject : query.variables[query.variables.length-1],
-          predicate : "http://dbpedia.org/ontology/" + elem.value,
+          predicate : elem.value, //"http://dbpedia.org/ontology/" + elem.value,
           object : "?" + (variableCount)
         }
 
@@ -105,14 +114,14 @@ export const formatResultQuery = (inputQuery) => {
         // Element of type property on top of property
       }
 
-    } else if (idx == 0) {
+    } else if (idx === 0) {
       // First element as a property
       query.variables.push("?"+(variableCount+1));
       variableCount++;
 
       let rdf = {
         subject : query.variables[0],
-        predicate : "http://dbpedia.org/property/" + elem.value,
+        predicate : elem.value, //"http://dbpedia.org/property/" + elem.value,
         object : query.variables[1]
       }
 
@@ -124,7 +133,7 @@ export const formatResultQuery = (inputQuery) => {
   return generatedQuery;
 }
 
-export const executeQuery = (endpoint, query) => {
+export const executeQuery = (endpoint, query, cancelToken) => {
   return axios({
       url: endpoint,
       method: 'GET',
@@ -132,11 +141,12 @@ export const executeQuery = (endpoint, query) => {
       'Accept': 'application/sparql-results+json',
       'Content-Type': 'application/x-www-form-urlencoded'
       },
-      params: { query } // using params instead of data because of urlencoded data
-  })
-  .then((res) => {
-      // console.log(res)
-      return res.data.results.bindings
-  })
-  .catch( err => console.log(err) )
+      params: { query }, // using params instead of data because of urlencoded data
+      cancelToken
+    })
+    .then((res) => {
+        // console.log(res)
+        return res.data.results.bindings
+    })
+    .catch( err => console.log(err) )
 }

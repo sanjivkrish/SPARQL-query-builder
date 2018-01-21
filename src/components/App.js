@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios'
 import { executeQuery, formatResultQuery } from '../helpers'
 
 import '../css/App.css'
@@ -10,14 +11,22 @@ import Result from './Result'
 class App extends React.Component {
   
   state = {
-    endpoint: 'http://live.dbpedia.org/sparql',
+    endpoint: 'http://dbpedia.org/sparql',
     query: [],
     classSuggestions: [],
     propertySuggestions: [],
-    resultList: []
+    resultList: [],
+    cancelToken: axios.CancelToken.source()
+  }
+
+  setCancelToken = (token) => {
+    this.setState({
+      cancelToken: token
+    })
   }
 
   executeResultQuery = () => {
+    this.state.cancelToken.cancel('Request outdated')
     let query = formatResultQuery(this.state.query);
     executeQuery(this.state.endpoint, query)
       .then((result) => {
@@ -46,9 +55,9 @@ class App extends React.Component {
     this.executeResultQuery();
   }
 
-  removeClassFromQuery = (rClass) => {
+  removeElementFromQuery = (url) => {
     const query = this.state.query
-    const i = query.findIndex( x => x.value === rClass )
+    const i = query.findIndex( x => x.value === url )
     query.splice(i, 1)
     this.setState({
       query
@@ -79,28 +88,25 @@ class App extends React.Component {
     // TODO
   }
 
-  handleQueryElementClick = (e) => {
-    this.removeClassFromQuery(e.target.innerText)
-  }
-
   translateQuery = () => {
     return (
       <span>Give me
         {
           this.state.query.map( (c, i) => {
             let spanEle;
-
+            const url = c.value.split('/')
+            const word = url[url.length - 1]
             if (c.type === 'class') {
               if (i === 0) {
-                spanEle = <span key={c.value}> every <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+                spanEle = <span key={c.value}> every <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
               } else {
-                spanEle = <span key={c.value}> that is also <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+                spanEle = <span key={c.value}> that is also <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
               }
             } else {
               if (i === 0) {
-                spanEle = <span key={c.value}> everything that has a property <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+                spanEle = <span key={c.value}> everything that has a property <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
               } else {
-                spanEle = <span key={c.value}> and a property <mark onClick={this.handleQueryElementClick}>{c.value}</mark></span>;
+                spanEle = <span key={c.value}> and a property <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
               }
             }
 
@@ -136,6 +142,9 @@ class App extends React.Component {
           </div>
           <Concept
             endpoint={this.state.endpoint}
+            query={this.state.query}
+            cancelToken={this.state.cancelToken}
+            setCancelToken={this.setCancelToken}
             classSuggestions={this.state.classSuggestions}
             propertySuggestions={this.state.propertySuggestions}
             setSuggestions={this.setSuggestions}
