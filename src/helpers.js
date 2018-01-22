@@ -132,7 +132,9 @@ export const formatResultQuery = (inputQuery) => {
   return generatedQuery;
 }
 
-export const executeQuery = (endpoint, query, cancelToken) => {
+let nextId = 0
+export const executeQuery = (endpoint, query) => {
+  const id = nextId++
   return axios({
       url: endpoint,
       method: 'POST',
@@ -143,8 +145,11 @@ export const executeQuery = (endpoint, query, cancelToken) => {
       data: getFormData({ query }) // using params instead of data because of urlencoded data
     })
     .then((res) => {
-        // console.log(res)
+      if (id === (nextId - 1) || id === (nextId - 2)) {
+        console.log('passing on')
         return res.data.results.bindings
+      }
+      return null
     })
     .catch( err => console.log(err) )
 }

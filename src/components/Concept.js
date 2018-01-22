@@ -19,7 +19,7 @@ class Concept extends React.Component {
   }
 
   updateSuggestion = () => {
-
+    
     if (this.input.value === '') {
       this.props.setSuggestions({
         classSuggestions: [],
@@ -34,9 +34,10 @@ class Concept extends React.Component {
 
     const classPromise = executeQuery(this.props.endpoint, classQuery)
     const propertyPromise = executeQuery(this.props.endpoint, propertyQuery)
+    
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
-        if (classes === undefined || properties === undefined) {
+        if (classes === null || properties === null || this.input.value === '') {
           return
         }
         const classSuggestions = classes.map( c => c.class.value )
