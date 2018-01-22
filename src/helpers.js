@@ -133,7 +133,7 @@ export const formatResultQuery = (inputQuery) => {
 }
 
 let nextId = 0
-export const executeQuery = (endpoint, query) => {
+export const executeQuery = (endpoint, query, cancelToken) => {
   const id = nextId++
   return axios({
       url: endpoint,
@@ -142,14 +142,14 @@ export const executeQuery = (endpoint, query) => {
       'Accept': 'application/sparql-results+json',
       'Content-Type': 'application/x-www-form-urlencoded'
       },
-      data: getFormData({ query }) // using params instead of data because of urlencoded data
+      data: getFormData({ query }), // using params instead of data because of urlencoded data
+      cancelToken
     })
     .then((res) => {
       if (id === (nextId - 1) || id === (nextId - 2)) {
-        console.log('passing on')
         return res.data.results.bindings
       }
       return null
     })
-    .catch( err => console.log(err) )
+    .catch( err => err ) // console.log(err)
 }

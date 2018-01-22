@@ -14,7 +14,14 @@ class App extends React.Component {
     query: [],
     classSuggestions: [],
     propertySuggestions: [],
-    resultList: []
+    resultList: [],
+    loading: false
+  }
+
+  setLoading = (loadingState) => {
+    this.setState({
+      loading: loadingState
+    })
   }
 
   executeResultQuery = () => {
@@ -141,6 +148,8 @@ class App extends React.Component {
           <Concept
             endpoint={this.state.endpoint}
             resultList={this.state.resultList}
+            loading={this.state.loading}
+            setLoading={this.setLoading}
             classSuggestions={this.state.classSuggestions}
             propertySuggestions={this.state.propertySuggestions}
             setSuggestions={this.setSuggestions}

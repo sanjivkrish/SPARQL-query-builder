@@ -28,6 +28,15 @@ input.rounded {
     align-items: center;
 }
 
-.checkbox {
+.option {
     margin-left: 15px;
+}
+
+.img-wrapper {
+    position: relative;
+}
+
+.loader {
+    position: absolute;
+    bottom: -12px;
 }
