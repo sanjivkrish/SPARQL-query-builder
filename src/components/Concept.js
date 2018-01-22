@@ -30,7 +30,7 @@ class Concept extends React.Component {
     
     
     const classQuery = constructClassQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
-    const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked, this.props.query)
+    const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked, this.props.resultList)
 
     const classPromise = executeQuery(this.props.endpoint, classQuery)
     const propertyPromise = executeQuery(this.props.endpoint, propertyQuery)

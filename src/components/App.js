@@ -18,6 +18,13 @@ class App extends React.Component {
   }
 
   executeResultQuery = () => {
+    if (this.state.query.length === 0) {
+      this.setState({
+        resultList: []
+      })
+      return
+    }
+    
     let query = formatResultQuery(this.state.query);
     executeQuery(this.state.endpoint, query)
       .then((result) => {
@@ -133,7 +140,7 @@ class App extends React.Component {
           </div>
           <Concept
             endpoint={this.state.endpoint}
-            query={this.state.query}
+            resultList={this.state.resultList}
             classSuggestions={this.state.classSuggestions}
             propertySuggestions={this.state.propertySuggestions}
             setSuggestions={this.setSuggestions}

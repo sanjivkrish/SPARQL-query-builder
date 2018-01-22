@@ -1,5 +1,6 @@
 import sparqljs from 'sparqljs'
 import axios from 'axios'
+import getFormData from 'form-data-urlencoded'
 
 export const throttle = (callback, delay) => {
   let previousCall = new Date().getTime();
@@ -35,22 +36,20 @@ export const constructClassQuery = (string, sensitive, wholeWord) => {
   LIMIT 200` 
 }
 
-export const constructPropertyQuery = (string, sensitive, wholeWord, query) => {
+export const constructPropertyQuery = (string, sensitive, wholeWord, resultList) => {
   return `
   PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
   PREFIX owl: <http://www.w3.org/2002/07/owl#>
   SELECT DISTINCT ?prop
   WHERE { 
     ${
-      query.filter( x => x.type === 'class').length === 0 ?
+      resultList.length === 0 ? 
       `{ ?prop a rdf:Property }
       UNION { ?prop a owl:ObjectProperty }
       UNION { ?prop a owl:DatatypeProperty }` :
-      query
-        .filter( x => x.type === 'class')
-        .map( x => `?thing a <${x.value}>.`)
-        .join('\n')
-        + '\n?thing ?prop ?value.'
+      resultList.map( x => {
+        return `{ <${x[0].value}> ?prop ?value }`
+      }).join('\n UNION')
     }
     
     FILTER ( REGEX(str(?prop), "http://.*/.*/${wholeWord ? `${string}$` : `.*${string}`}" ${sensitive ? '' : ', "i"'}) )
@@ -136,12 +135,12 @@ export const formatResultQuery = (inputQuery) => {
 export const executeQuery = (endpoint, query, cancelToken) => {
   return axios({
       url: endpoint,
-      method: 'GET',
+      method: 'POST',
       headers: {
       'Accept': 'application/sparql-results+json',
       'Content-Type': 'application/x-www-form-urlencoded'
       },
-      params: { query } // using params instead of data because of urlencoded data
+      data: getFormData({ query }) // using params instead of data because of urlencoded data
     })
     .then((res) => {
         // console.log(res)
