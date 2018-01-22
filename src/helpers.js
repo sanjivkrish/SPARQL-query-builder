@@ -42,7 +42,7 @@ export const constructPropertyQuery = (string, sensitive, wholeWord, query) => {
   SELECT DISTINCT ?prop
   WHERE { 
     ${
-      query.length === 0 ?
+      query.filter( x => x.type === 'class').length === 0 ?
       `{ ?prop a rdf:Property }
       UNION { ?prop a owl:ObjectProperty }
       UNION { ?prop a owl:DatatypeProperty }` :
@@ -89,7 +89,7 @@ export const formatResultQuery = (inputQuery) => {
       let rdf = {
         subject : query.variables[query.variables.length-1],
         predicate : "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
-        object : elem.value // "http://dbpedia.org/ontology/" + elem.value
+        object : elem.value
       }
 
       query.where[0].triples.push(rdf);
@@ -101,7 +101,7 @@ export const formatResultQuery = (inputQuery) => {
 
         let rdf = {
           subject : query.variables[query.variables.length-1],
-          predicate : elem.value, //"http://dbpedia.org/ontology/" + elem.value,
+          predicate : elem.value,
           object : "?" + (variableCount)
         }
 
@@ -121,7 +121,7 @@ export const formatResultQuery = (inputQuery) => {
 
       let rdf = {
         subject : query.variables[0],
-        predicate : elem.value, //"http://dbpedia.org/property/" + elem.value,
+        predicate : elem.value,
         object : query.variables[1]
       }
 
@@ -141,8 +141,7 @@ export const executeQuery = (endpoint, query, cancelToken) => {
       'Accept': 'application/sparql-results+json',
       'Content-Type': 'application/x-www-form-urlencoded'
       },
-      params: { query }, // using params instead of data because of urlencoded data
-      cancelToken
+      params: { query } // using params instead of data because of urlencoded data
     })
     .then((res) => {
         // console.log(res)

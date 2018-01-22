@@ -1,5 +1,4 @@
 import React from 'react'
-import axios from 'axios'
 
 import { throttle, constructClassQuery, constructPropertyQuery, executeQuery } from '../helpers'
 import Suggestion from './Suggestion'
@@ -20,7 +19,6 @@ class Concept extends React.Component {
   }
 
   updateSuggestion = () => {
-    this.props.cancelToken.cancel('Request outdated') // Cancel previous requests
 
     if (this.input.value === '') {
       this.props.setSuggestions({
@@ -34,10 +32,8 @@ class Concept extends React.Component {
     const classQuery = constructClassQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
     const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked, this.props.query)
 
-    const source = axios.CancelToken.source() // Create a new cancel token
-    this.props.setCancelToken(source); // Update state
-    const classPromise = executeQuery(this.props.endpoint, classQuery, source.token)
-    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery, source.token)
+    const classPromise = executeQuery(this.props.endpoint, classQuery)
+    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery)
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
         if (classes === undefined || properties === undefined) {

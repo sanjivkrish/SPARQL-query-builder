@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from 'axios'
 import { executeQuery, formatResultQuery } from '../helpers'
 
 import '../css/App.css'
@@ -15,18 +14,10 @@ class App extends React.Component {
     query: [],
     classSuggestions: [],
     propertySuggestions: [],
-    resultList: [],
-    cancelToken: axios.CancelToken.source()
-  }
-
-  setCancelToken = (token) => {
-    this.setState({
-      cancelToken: token
-    })
+    resultList: []
   }
 
   executeResultQuery = () => {
-    this.state.cancelToken.cancel('Request outdated')
     let query = formatResultQuery(this.state.query);
     executeQuery(this.state.endpoint, query)
       .then((result) => {
@@ -143,8 +134,6 @@ class App extends React.Component {
           <Concept
             endpoint={this.state.endpoint}
             query={this.state.query}
-            cancelToken={this.state.cancelToken}
-            setCancelToken={this.setCancelToken}
             classSuggestions={this.state.classSuggestions}
             propertySuggestions={this.state.propertySuggestions}
             setSuggestions={this.setSuggestions}
