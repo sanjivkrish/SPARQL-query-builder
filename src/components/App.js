@@ -1,5 +1,5 @@
 import React from 'react';
-import { executeQuery, formatResultQuery } from '../helpers'
+import { executeQuery, formatResultQuery, constructPropertyQuery } from '../helpers'
 
 import '../css/App.css'
 import '../css/Concept.css'
@@ -27,19 +27,34 @@ class App extends React.Component {
   executeResultQuery = () => {
     if (this.state.query.length === 0) {
       this.setState({
-        resultList: []
+        resultList: [],
+        propertySuggestions: []
       })
       return
     }
     
-    let query = formatResultQuery(this.state.query);
+    const query = formatResultQuery(this.state.query);
+    this.setLoading(true)
     executeQuery(this.state.endpoint, query)
       .then((result) => {
-        this.setState({
-          resultList: result
-        })
+        if (result.length === 0) {
+          this.setState({
+            resultList: result,
+            loading: false
+          })
+          return
+        }
+        const propertyQuery = constructPropertyQuery('', false, false, result)
+        executeQuery(this.state.endpoint, propertyQuery)
+          .then( propertyResult => {
+            const propertySuggestions = propertyResult.map( p => p.prop.value )
+            this.setState({
+              resultList: result,
+              propertySuggestions,
+              loading: false
+            })
+          })
       })
-
   }
 
   addClassToQuery = (newClass) => {

@@ -42,6 +42,7 @@ class Concept extends React.Component {
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
         if (classes === null || properties === null || this.input.value === '') {
+          this.props.setLoading(false)
           return
         }
         const classSuggestions = classes.map( c => c.class.value )
