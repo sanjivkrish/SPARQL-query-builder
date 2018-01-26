@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios'
-import { executeQuery, formatResultQuery, constructPropertyQuery } from '../helpers'
+import { executeQuery, formatResultQuery, constructPropertyQuery, constructObjectQuery } from '../helpers'
 
 import '../css/App.css'
 import '../css/Concept.css'
@@ -15,6 +15,7 @@ class App extends React.Component {
     query: [],
     classSuggestions: [],
     propertySuggestions: [],
+    objectSuggestions: [],
     resultList: [],
     loading: false,
     cancelToken: axios.CancelToken.source()
@@ -36,7 +37,9 @@ class App extends React.Component {
     if (this.state.query.length === 0) {
       this.setState({
         resultList: [],
-        propertySuggestions: []
+        classSuggestions: [],
+        propertySuggestions: [],
+        objectSuggestions: []
       })
       return
     }
@@ -54,34 +57,55 @@ class App extends React.Component {
           })
           return
         }
+        
+        // Offer property and object suggestions
         const propertyQuery = constructPropertyQuery('', false, false, result)
-        executeQuery(this.state.endpoint, propertyQuery)
-          .then( propertyResult => {
-            const propertySuggestions = propertyResult.map( p => p.prop.value )
+        const propertyPromise = executeQuery(this.state.endpoint, propertyQuery)
+
+        let allPromises
+        if (this.state.query.filter( e => e.type === 'property').length !== 0) {
+          const objectQuery = constructObjectQuery('', false, false, this.state.query)
+          const objectPromise = executeQuery(this.state.endpoint, objectQuery)
+          allPromises = Promise.all([propertyPromise, objectPromise])
+        } else {
+          allPromises = Promise.all([propertyPromise])
+        }
+
+        allPromises
+          .then(([properties, objects]) => {
+            const propertySuggestions = properties.map( p => p.prop.value )
+            const objectSuggestions = objects ? objects.map( p => p.object.value ) : []
             this.setState({
               resultList: result,
+              classSuggestions: [],
               propertySuggestions,
+              objectSuggestions,
               loading: false
             })
           })
+        // executeQuery(this.state.endpoint, propertyQuery)
+        //   .then( propertyResult => {
+        //     const propertySuggestions = propertyResult.map( p => p.prop.value )
+        //     this.setState({
+        //       resultList: result,
+        //       classSuggestions: [],
+        //       propertySuggestions,
+        //       objectSuggestions: [],
+        //       loading: false
+        //     })
+        //   })
       })
   }
 
-  addClassToQuery = (newClass) => {
+  addElementToQuery = (element, type) => {
     const query = this.state.query
-    const newElem = {
-      type  : 'class',
-      value :  newClass
-    }
-
-    query.push(newElem)
-
-    this.setState({
-      query,
-      classSuggestions : [],
-      propertySuggestions : []
+    query.push({
+      type,
+      value: element
     })
-
+    this.setState({
+      query
+    })
     this.executeResultQuery();
   }
 
@@ -93,29 +117,6 @@ class App extends React.Component {
       query
     })
     this.executeResultQuery()
-  }
-
-  addPropertyToQuery = (newProperty) => {
-    const query = this.state.query
-    const newElem = {
-      type  : 'property',
-      value :  newProperty
-    }
-
-    query.push(newElem)
-
-    this.setState({
-      query,
-      classSuggestions : [],
-      propertySuggestions : []
-    })
-
-    this.executeResultQuery();
-  }
-
-  addLiteralToQuery = (newLiteral) => {
-    // const query = this.state.query
-    // TODO
   }
 
   translateQuery = () => {
@@ -147,10 +148,14 @@ class App extends React.Component {
     )
   }
 
-  setSuggestions = ({ classSuggestions, propertySuggestions }) => {
+  setSuggestions = ({ classSuggestions, propertySuggestions, objectSuggestions }) => {
+    classSuggestions = classSuggestions || this.state.classSuggestions
+    propertySuggestions = propertySuggestions || this.state.propertySuggestions
+    objectSuggestions = objectSuggestions || this.state.objectSuggestions
     this.setState({
       classSuggestions,
-      propertySuggestions
+      propertySuggestions,
+      objectSuggestions
     })
   }
 
@@ -172,6 +177,7 @@ class App extends React.Component {
           </div>
           <Concept
             endpoint={this.state.endpoint}
+            query={this.state.query}
             resultList={this.state.resultList}
             loading={this.state.loading}
             setLoading={this.setLoading}
@@ -179,9 +185,9 @@ class App extends React.Component {
             setCancelToken={this.setCancelToken}
             classSuggestions={this.state.classSuggestions}
             propertySuggestions={this.state.propertySuggestions}
+            objectSuggestions={this.state.objectSuggestions}
             setSuggestions={this.setSuggestions}
-            addClassToQuery={this.addClassToQuery}
-            addPropertyToQuery={this.addPropertyToQuery}
+            addElementToQuery={this.addElementToQuery}
           />
           <Result
             resultList={this.state.resultList}

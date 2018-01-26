@@ -58,6 +58,26 @@ export const constructPropertyQuery = (string, sensitive, wholeWord, resultList)
   LIMIT 200` 
 }
 
+export const constructObjectQuery = (string, sensitive, wholeWord, query) => {
+  return `
+  PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+  PREFIX owl: <http://www.w3.org/2002/07/owl#>
+  SELECT DISTINCT ?object
+  WHERE { 
+    ${
+      query
+        .filter( e => e.type === 'property')
+        .map( e => `?thing <${e.value}> ?object.`)
+        .join('\n')
+    }
+    
+    FILTER ( REGEX(str(?object), "http://.*/.*/${wholeWord ? `${string}$` : `.*${string}`}" ${sensitive ? '' : ', "i"'}) )
+    FILTER ( !( REGEX(str(?object), "^(http://www.w3.org/2002/07/owl#|http://www.openlinksw.com/|nodeID://)", "i") ) )
+  }
+  LIMIT 200` 
+}
+
+
 export const formatResultQuery = (inputQuery) => {
   let SparqlGenerator = sparqljs.Generator;
   let generator = new SparqlGenerator();
@@ -146,10 +166,9 @@ export const executeQuery = (endpoint, query, cancelToken) => {
       cancelToken
     })
     .then((res) => {
-      if (id === (nextId - 1) || id === (nextId - 2)) {
+      if (id === (nextId - 1) || id === (nextId - 2) || id === (nextId - 3)) {
         return res.data.results.bindings
       }
-      return null
     })
     .catch( err => err ) // console.log(err)
 }
