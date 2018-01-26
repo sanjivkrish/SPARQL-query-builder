@@ -1,4 +1,5 @@
 import React from 'react';
+import axios from 'axios'
 import { executeQuery, formatResultQuery, constructPropertyQuery } from '../helpers'
 
 import '../css/App.css'
@@ -15,12 +16,19 @@ class App extends React.Component {
     classSuggestions: [],
     propertySuggestions: [],
     resultList: [],
-    loading: false
+    loading: false,
+    cancelToken: axios.CancelToken.source()
   }
 
   setLoading = (loadingState) => {
     this.setState({
       loading: loadingState
+    })
+  }
+
+  setCancelToken = (token) => {
+    this.setState({
+      cancelToken: token
     })
   }
 
@@ -35,6 +43,8 @@ class App extends React.Component {
     
     const query = formatResultQuery(this.state.query);
     this.setLoading(true)
+    this.state.cancelToken.cancel('Request outdated')
+    this.setCancelToken(axios.CancelToken.source())
     executeQuery(this.state.endpoint, query)
       .then((result) => {
         if (result.length === 0) {
@@ -165,6 +175,8 @@ class App extends React.Component {
             resultList={this.state.resultList}
             loading={this.state.loading}
             setLoading={this.setLoading}
+            cancelToken={this.state.cancelToken}
+            setCancelToken={this.setCancelToken}
             classSuggestions={this.state.classSuggestions}
             propertySuggestions={this.state.propertySuggestions}
             setSuggestions={this.setSuggestions}

@@ -18,12 +18,12 @@ class Concept extends React.Component {
     this.input.value = "";
   }
 
-  cancelToken = axios.CancelToken.source()
+  // cancelToken = axios.CancelToken.source()
   updateSuggestion = () => {
     
     if (this.input.value === '') {
-      this.cancelToken.cancel('Request outdated') // cancel all remaining open requests
-      this.cancelToken = axios.CancelToken.source() // generate new cancelToken
+      this.props.cancelToken.cancel('Request outdated') // cancel all remaining open requests
+      this.props.setCancelToken(axios.CancelToken.source()) // generate new cancelToken
       this.props.setLoading(false) // remove loading sign
       this.props.setSuggestions({
         classSuggestions: [],
@@ -36,8 +36,8 @@ class Concept extends React.Component {
     const classQuery = constructClassQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked)
     const propertyQuery = constructPropertyQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked, this.props.resultList)
 
-    const classPromise = executeQuery(this.props.endpoint, classQuery, this.cancelToken.token)
-    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery, this.cancelToken.token)
+    const classPromise = executeQuery(this.props.endpoint, classQuery, this.props.cancelToken.token)
+    const propertyPromise = executeQuery(this.props.endpoint, propertyQuery, this.props.cancelToken.token)
     this.props.setLoading(true) // add loading sign
     Promise.all([classPromise, propertyPromise])
       .then(([classes, properties]) => {
@@ -47,8 +47,8 @@ class Concept extends React.Component {
         }
         const classSuggestions = classes.map( c => c.class.value )
         const propertySuggestions = properties.map( p => p.prop.value )
-        this.cancelToken.cancel('Request outdated') // cancel all remaining open requests
-        this.cancelToken = axios.CancelToken.source() // generate new cancelToken
+        this.props.cancelToken.cancel('Request outdated') // cancel all remaining open requests
+        this.props.setCancelToken(axios.CancelToken.source()) // generate new cancelToken
         this.props.setLoading(false)
         this.props.setSuggestions({
           classSuggestions,
