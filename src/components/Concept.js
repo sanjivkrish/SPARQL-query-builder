@@ -18,12 +18,15 @@ class Concept extends React.Component {
       this.props.cancelToken.cancel('Request outdated') // cancel all remaining open requests
       this.props.setCancelToken(axios.CancelToken.source()) // generate new cancelToken
       this.props.setSuggestions({
-        classSuggestions: []
+        classSuggestions: [],
       })
       if (this.props.resultList.length === 0) {
         this.props.setSuggestions({
-          propertySuggestions: []
+          propertySuggestions: [],
+          objectSuggestions: []
         })
+      } else {
+        this.props.setSuggestions(this.props.cachedSuggestions)
       }
       this.props.setLoading(false) // remove loading sign
       return
@@ -88,6 +91,7 @@ class Concept extends React.Component {
             <Suggestion
               suggestionList={this.props.classSuggestions}
               onItemSelect={this.selectElement('class')}
+              query={this.props.query}
             />
           </div>
           <div className="Concept">
@@ -95,6 +99,7 @@ class Concept extends React.Component {
             <Suggestion
               suggestionList={this.props.propertySuggestions}
               onItemSelect={this.selectElement('property')}
+              query={this.props.query}
             />
           </div>
             <div className="Concept">
@@ -102,6 +107,7 @@ class Concept extends React.Component {
             <Suggestion
               suggestionList={this.props.objectSuggestions}
               onItemSelect={this.selectElement('object')}
+              query={this.props.query}
             />
           </div>
         </div>

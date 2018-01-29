@@ -16,6 +16,7 @@ class App extends React.Component {
     classSuggestions: [],
     propertySuggestions: [],
     objectSuggestions: [],
+    cachedSuggestions: {},
     resultList: [],
     loading: false,
     cancelToken: axios.CancelToken.source()
@@ -80,20 +81,10 @@ class App extends React.Component {
               classSuggestions: [],
               propertySuggestions,
               objectSuggestions,
+              cachedSuggestions: { propertySuggestions, objectSuggestions },
               loading: false
             })
           })
-        // executeQuery(this.state.endpoint, propertyQuery)
-        //   .then( propertyResult => {
-        //     const propertySuggestions = propertyResult.map( p => p.prop.value )
-        //     this.setState({
-        //       resultList: result,
-        //       classSuggestions: [],
-        //       propertySuggestions,
-        //       objectSuggestions: [],
-        //       loading: false
-        //     })
-        //   })
       })
   }
 
@@ -187,6 +178,7 @@ class App extends React.Component {
             propertySuggestions={this.state.propertySuggestions}
             objectSuggestions={this.state.objectSuggestions}
             setSuggestions={this.setSuggestions}
+            cachedSuggestions={this.state.cachedSuggestions}
             addElementToQuery={this.addElementToQuery}
           />
           <Result
