@@ -182,6 +182,7 @@ class App extends React.Component {
             addElementToQuery={this.addElementToQuery}
           />
           <Result
+            headerList={this.state.query}
             resultList={this.state.resultList}
           />
         </div>

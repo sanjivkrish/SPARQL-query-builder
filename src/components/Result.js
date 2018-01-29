@@ -35,26 +35,45 @@ class Result extends React.Component {
                 <h4>Result</h4>
                 <div className="result-box">
                     <table>
+                        <thead>
+                            <tr>
+                                {
+                                    this.props.headerList.map((elem, idx) => {
+                                        const url = elem.value.split('/')
+                                        const word = url[url.length - 1]
+                                        let keys
+
+                                        if (this.props.resultList.length > 0) {
+                                            keys = Object.keys(this.props.resultList[0])
+
+                                            if (idx < keys.length) {
+                                                return(<th key={idx}>{word}</th>)
+                                            }
+                                        }
+                                    })
+                                }
+                            </tr>
+                        </thead>
                         <tbody>
-                        {
-                            this.props.resultList.map((elem, idx) => {
-                                let keys = Object.keys(elem)
-                                let rows = [];
+                            {
+                                this.props.resultList.map((elem, idx) => {
+                                    let keys = Object.keys(elem)
+                                    let rows = [];
 
-                                keys.forEach((key, idn) => {
-                                    const url = elem[key].value.split('/')
-                                    const word = url[url.length - 1]
+                                    keys.forEach((key, idn) => {
+                                        const url = elem[key].value.split('/')
+                                        const word = url[url.length - 1]
 
-                                    rows.push(<td key={idn}>{word}</td>)
+                                        rows.push(<td key={idn}>{word}</td>)
+                                    })
+                                    
+                                    return (
+                                        <tr key={idx}>
+                                            {rows}
+                                        </tr>
+                                    )
                                 })
-                                
-                                return (
-                                    <tr key={idx}>
-                                        {rows}
-                                    </tr>
-                                )
-                            })
-                        }
+                            }
                         </tbody>
                     </table>
                 </div>

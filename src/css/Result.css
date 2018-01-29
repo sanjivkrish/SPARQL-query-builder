@@ -10,3 +10,12 @@
 .result-item {
     margin: 2px;
 }
+
+thead {
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+th {
+    text-align: inherit;
+}
