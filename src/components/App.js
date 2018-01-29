@@ -120,15 +120,15 @@ class App extends React.Component {
             const word = url[url.length - 1]
             if (c.type === 'class') {
               if (i === 0) {
-                spanEle = <span key={c.value}> every <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
+                spanEle = <span key={c.value}> every <span className="selection class" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
               } else {
-                spanEle = <span key={c.value}> that is also <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
+                spanEle = <span key={c.value}> that is also <span className="selection class" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
               }
             } else {
               if (i === 0) {
-                spanEle = <span key={c.value}> everything that has a property <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
+                spanEle = <span key={c.value}> everything that has a property <span className="selection property" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
               } else {
-                spanEle = <span key={c.value}> and a property <mark onClick={() => this.removeElementFromQuery(c.value)}>{word}</mark></span>;
+                spanEle = <span key={c.value}> and a property <span className="selection property" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
               }
             }
 
