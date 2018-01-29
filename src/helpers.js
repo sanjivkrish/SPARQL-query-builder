@@ -131,6 +131,20 @@ export const formatResultQuery = (inputQuery) => {
         query.where[0].triples.push(rdf);
       } else {
         // Element of type property on top of property
+        query.variables.push("?"+(variableCount+1));
+        variableCount++;
+
+        let rdf = {
+          subject : query.variables[0],
+          predicate : elem.value,
+          object : query.variables[query.variables.length-1]
+        }
+
+        if (inputQuery[idx-1].type === 'class') {
+          query.variables.push(rdf.object);
+        }
+
+        query.where[0].triples.push(rdf);
       }
 
     } else if (idx === 0) {
