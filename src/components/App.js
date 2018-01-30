@@ -1,6 +1,8 @@
 import React from 'react';
 import axios from 'axios'
-import { executeQuery, formatResultQuery, constructPropertyQuery, constructObjectQuery } from '../helpers'
+
+// formatResultQuery
+import { executeQuery, constructPropertyQuery, constructObjectQuery, constructResultQuery, getLastUrlElement } from '../helpers'
 
 import '../css/App.css'
 import '../css/Concept.css'
@@ -11,7 +13,7 @@ import Result from './Result'
 class App extends React.Component {
   
   state = {
-    endpoint: 'https://dbpedia.org/sparql',
+    endpoint: 'http://dbpedia.org/sparql',
     query: [],
     classSuggestions: [],
     propertySuggestions: [],
@@ -34,23 +36,28 @@ class App extends React.Component {
     })
   }
 
-  executeResultQuery = () => {
-    if (this.state.query.length === 0) {
+  executeResultQuery = (query) => {
+    if (query.length === 0) {
       this.setState({
         resultList: [],
         classSuggestions: [],
         propertySuggestions: [],
-        objectSuggestions: []
+        objectSuggestions: [],
+        loading: false
       })
       return
     }
-    
-    const query = formatResultQuery(this.state.query);
+    // const query = formatResultQuery(this.state.query);
+    const queryString = constructResultQuery(query);
     this.setLoading(true)
     this.state.cancelToken.cancel('Request outdated')
     this.setCancelToken(axios.CancelToken.source())
-    executeQuery(this.state.endpoint, query)
+    executeQuery(this.state.endpoint, queryString)
       .then((result) => {
+        if (result === null) {
+          return // catch outdated requests
+        }
+
         if (result.length === 0) {
           this.setState({
             resultList: result,
@@ -64,8 +71,9 @@ class App extends React.Component {
         const propertyPromise = executeQuery(this.state.endpoint, propertyQuery)
 
         let allPromises
-        if (this.state.query.filter( e => e.type === 'property').length !== 0) {
-          const objectQuery = constructObjectQuery('', false, false, this.state.query)
+        const lastQueryElement = query[query.length - 1]
+        if (lastQueryElement && lastQueryElement.type === 'property' && lastQueryElement.object === undefined) {
+          const objectQuery = constructObjectQuery('', false, false, query)
           const objectPromise = executeQuery(this.state.endpoint, objectQuery)
           allPromises = Promise.all([propertyPromise, objectPromise])
         } else {
@@ -74,14 +82,16 @@ class App extends React.Component {
 
         allPromises
           .then(([properties, objects]) => {
-            const propertySuggestions = properties.map( p => p.prop.value )
-            const objectSuggestions = objects ? objects.map( p => p.object.value ) : []
+            if (properties === null || objects === null) {
+              return // catch outdated requests
+            }
+
             this.setState({
               resultList: result,
               classSuggestions: [],
-              propertySuggestions,
-              objectSuggestions,
-              cachedSuggestions: { propertySuggestions, objectSuggestions },
+              propertySuggestions: properties,
+              objectSuggestions: objects || [],
+              cachedSuggestions: { propertySuggestions: properties, objectSuggestions: objects || [] },
               loading: false
             })
           })
@@ -89,25 +99,53 @@ class App extends React.Component {
   }
 
   addElementToQuery = (element, type) => {
-    const query = this.state.query
-    query.push({
-      type,
-      value: element
-    })
+    const query = [...this.state.query]
+    if (type === 'object') {
+      const lastElement = query.pop()
+      if (lastElement.type === 'property') {
+        lastElement.object = element
+        query.push(lastElement)
+      } else {
+        query.push(lastElement)
+      }
+    } else {
+      query.push({
+        type,
+        element
+      })
+    }
     this.setState({
-      query
+      query,
+      resultList: []
     })
-    this.executeResultQuery();
+    this.executeResultQuery(query);
   }
 
   removeElementFromQuery = (url) => {
-    const query = this.state.query
-    const i = query.findIndex( x => x.value === url )
-    query.splice(i, 1)
-    this.setState({
-      query
+    const query = [...this.state.query]
+    query.forEach( (x, i) => {
+      if (x.type === 'property') {
+        if (x.element.value === url) {
+          query.splice(i, 1)
+          return
+        }
+        
+        if (x.object !== undefined && x.object.value === url) {
+          delete x.object
+          return
+        }
+      } else {
+        if (x.element.value === url) {
+          query.splice(i, 1)
+          return
+        }
+      }
     })
-    this.executeResultQuery()
+    this.setState({
+      query,
+      resultList: []
+    })
+    this.executeResultQuery(query)
   }
 
   translateQuery = () => {
@@ -116,20 +154,23 @@ class App extends React.Component {
         {
           this.state.query.map( (c, i) => {
             let spanEle;
-            const url = c.value.split('/')
-            const word = url[url.length - 1]
+            const word = getLastUrlElement(c.element.value)
             if (c.type === 'class') {
               if (i === 0) {
-                spanEle = <span key={c.value}> every <span className="selection class" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
+                spanEle = <span key={c.element.value}> every <span className="selection class" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span></span>;
               } else {
-                spanEle = <span key={c.value}> that is also <span className="selection class" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
+                spanEle = <span key={c.element.value}> that is also <span className="selection class" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span></span>;
               }
-            } else {
-              if (i === 0) {
-                spanEle = <span key={c.value}> everything that has a property <span className="selection property" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
-              } else {
-                spanEle = <span key={c.value}> and a property <span className="selection property" onClick={() => this.removeElementFromQuery(c.value)}>{word}</span></span>;
-              }
+            } else if (c.type === 'property') {
+              spanEle = <span key={c.element.value}>{ i === 0 ? ' everything that has a property ' : ' and a property '}
+                  <span className="selection property" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span>
+                  <span> </span>
+                  { c.object !== undefined ? 
+                    <span className="selection object" onClick={() => this.removeElementFromQuery(c.object.value)}>
+                      ({getLastUrlElement(c.object.value).split('@')[0]})
+                    </span> : null 
+                  }
+                </span>;
             }
 
             return spanEle;
@@ -182,7 +223,7 @@ class App extends React.Component {
             addElementToQuery={this.addElementToQuery}
           />
           <Result
-            headerList={this.state.query}
+            query={this.state.query}
             resultList={this.state.resultList}
           />
         </div>

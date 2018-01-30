@@ -1,14 +1,14 @@
 import React from 'react'
 import axios from 'axios'
-import { throttle, constructClassQuery, constructPropertyQuery, constructObjectQuery, executeQuery } from '../helpers'
+import { throttle, constructClassQuery, constructPropertyQuery, constructObjectQuery, executeQuery, getLastUrlElement } from '../helpers'
 import Suggestion from './Suggestion'
 import '../css/Concept.css'
 
 class Concept extends React.Component {
 
   selectElement = (type) => {
-    return (url) => {
-      this.props.addElementToQuery(url, type)
+    return (element) => {
+      this.props.addElementToQuery(element, type)
       this.input.value = ""
     }   
   }
@@ -22,6 +22,7 @@ class Concept extends React.Component {
       })
       if (this.props.resultList.length === 0) {
         this.props.setSuggestions({
+          classSuggestions: [],
           propertySuggestions: [],
           objectSuggestions: []
         })
@@ -39,7 +40,8 @@ class Concept extends React.Component {
     const propertyPromise = executeQuery(this.props.endpoint, propertyQuery, this.props.cancelToken.token)
 
     let allPromises
-    if (this.props.query.filter( e => e.type === 'property').length !== 0) {
+    const lastQueryElement = this.props.query[this.props.query.length - 1]
+    if (lastQueryElement && lastQueryElement.type === 'property' && lastQueryElement.object === undefined) {
       const objectQuery = constructObjectQuery(this.input.value, this.checkSensitive.checked, this.checkWhole.checked, this.props.query)
       const objectPromise = executeQuery(this.props.endpoint, objectQuery, this.props.cancelToken.token)
       allPromises = Promise.all([classPromise, propertyPromise, objectPromise])
@@ -49,34 +51,60 @@ class Concept extends React.Component {
     this.props.setLoading(true) // add loading sign
     allPromises
       .then(([classes, properties, objects]) => {
-        if (this.input.value === '') {
-          this.props.setLoading(false)
+        if (this.input.value === '' || classes === null || properties === null || objects === null) {
+          // catch outdated requests
           return
         }
-        const classSuggestions = classes.map( c => c.class.value )
-        const propertySuggestions = properties.map( p => p.prop.value )
-        const objectSuggestions = objects ? objects.map( p => p.object.value ) : []
-        this.props.cancelToken.cancel('Request outdated') // cancel all remaining open requests
-        this.props.setCancelToken(axios.CancelToken.source()) // generate new cancelToken
+
+        // some extra filtering because dbpedia is not accurate enough
+        const filterFunction = (e) => {
+          const sensitive = this.checkSensitive.checked
+          const whole = this.checkWhole.checked
+          
+          const input = this.input.value
+          const word = getLastUrlElement(e.variable.value)
+          
+          if (!sensitive && !whole) {
+            return word.toLowerCase().indexOf(input.toLowerCase()) !== -1
+          }
+
+          if (sensitive && !whole) {
+            return word.indexOf(input) !== -1
+          }
+
+          if (!sensitive && whole) {
+            const regex = `^${input.toLowerCase()}$`
+            return word.toLowerCase().match(new RegExp(regex)) !== null
+          }
+
+          if (sensitive && whole) {
+            const regex = `^${input}$`
+            const a = word.indexOf(input) !== -1
+            const b = word.match(new RegExp(regex)) !== null
+            return a && b
+          }
+        }
+
         this.props.setSuggestions({
-          classSuggestions,
-          propertySuggestions,
-          objectSuggestions
+          classSuggestions: classes.filter( filterFunction ),
+          propertySuggestions: properties.filter( filterFunction ),
+          objectSuggestions: objects ? objects.filter( filterFunction ) : []
         })
         this.props.setLoading(false)
       })
       .catch( err => err)
   }
   
+  throttleTime = 1500
   render() {
     return (
       <div>
         <h2>Concepts</h2>
-        <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, 500)}/>
+        <input id="conceptBox" className="rounded" ref={(input) => this.input = input} type="text" onInput={throttle(this.updateSuggestion, this.throttleTime)}/>
         <span>
-          <input id="check-sensitive" className="option" type="checkbox" ref={(input) => this.checkSensitive = input} onChange={throttle(this.updateSuggestion, 500)}></input>
+          <input id="check-sensitive" className="option" type="checkbox" ref={(input) => this.checkSensitive = input} onChange={throttle(this.updateSuggestion, this.throttleTime)}></input>
           <label onClick={() => this.checkSensitive.click()}>Case-sensitive</label>
-          <input id="check-whole" className="option" type="checkbox" ref={(input) => this.checkWhole = input} onChange={throttle(this.updateSuggestion, 500)}></input>
+          <input id="check-whole" className="option" type="checkbox" ref={(input) => this.checkWhole = input} onChange={throttle(this.updateSuggestion, this.throttleTime)}></input>
           <label onClick={() => this.checkWhole.click()}>Whole word only</label>
           {
             this.props.loading ?
