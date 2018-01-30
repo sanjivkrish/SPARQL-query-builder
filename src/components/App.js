@@ -86,8 +86,35 @@ class App extends React.Component {
               return // catch outdated requests
             }
 
+            const propertyIndices = []
+            query.forEach( (e, i) => {
+              if (e.type === 'property') {
+                propertyIndices.push(i)
+              }
+            })
+
+            // Very often when chosing an uri as an object
+            // dbpedia returns results that dont fully match the chosen object
+            // Thatswhy there is additional filtering
+            const resultFilter = (r) => {
+              const values = Object.values(r)
+              return values.every( (resultObject, i) => {
+                if (i > 0) { // First element is always the subject -> ignore it
+                  if (resultObject.type === 'uri') {
+                    const resultObjectWord = getLastUrlElement(resultObject.value)
+                    const chosenProperty = query[ propertyIndices[i - 1] ]
+                    if (chosenProperty.object !== undefined) {
+                      const chosenObjectWord = getLastUrlElement(chosenProperty.object.value)
+                      return resultObjectWord === chosenObjectWord
+                    }
+                  }
+                }
+                return true
+              })
+            }
+
             this.setState({
-              resultList: result,
+              resultList: result.filter( resultFilter ),
               classSuggestions: [],
               propertySuggestions: properties,
               objectSuggestions: objects || [],
@@ -108,9 +135,6 @@ class App extends React.Component {
       } else {
         query.push(lastElement)
       }
-    // } else if (type === 'property' && query.length === 0) {
-    //   query.push({ type, element }) // push property onto query
-    //   query.push({ type: 'class', element: { value: 'thing' } })
     } else {
       query.push({ type, element })
     }
