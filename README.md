@@ -35,7 +35,7 @@ You can start the application in localhost by:
 
 ## App - Production version
 
-https://sparql-query-bulder.herokuapp.com/
+https://sparql-query-builder.herokuapp.com/
 
 ## License
 
