@@ -71,6 +71,12 @@ export const constructObjectQuery = (string, sensitive, wholeWord, query) => {
   SELECT DISTINCT ?variable
   WHERE { 
     ${
+      query
+        .filter( e => e.type === 'class' )
+        .map( e => `?thing a <${e.element.value}>.`)
+        .join('\n')
+    }
+    ${
       `?thing <${query
         .filter( e => e.type === 'property')
         .pop().element.value
