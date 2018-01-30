@@ -13,7 +13,7 @@ import Result from './Result'
 class App extends React.Component {
   
   state = {
-    endpoint: 'http://dbpedia.org/sparql',
+    endpoint: 'https://dbpedia.org/sparql',
     query: [],
     classSuggestions: [],
     propertySuggestions: [],
