@@ -95,7 +95,7 @@ class Concept extends React.Component {
       .catch( err => err)
   }
   
-  throttleTime = 1500
+  throttleTime = 2000
   render() {
     return (
       <div>
