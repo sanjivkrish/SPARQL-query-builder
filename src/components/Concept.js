@@ -85,6 +85,8 @@ class Concept extends React.Component {
           }
         }
 
+        this.props.cancelToken.cancel('Request outdated') // cancel all remaining open requests
+        this.props.setCancelToken(axios.CancelToken.source()) // generate new cancelToken
         this.props.setSuggestions({
           classSuggestions: classes.filter( filterFunction ),
           propertySuggestions: properties.filter( filterFunction ),
@@ -92,7 +94,7 @@ class Concept extends React.Component {
         })
         this.props.setLoading(false)
       })
-      .catch( err => err)
+      .catch( err => null)
   }
   
   throttleTime = 2000

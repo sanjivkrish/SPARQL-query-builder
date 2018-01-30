@@ -256,7 +256,8 @@ export const executeQuery = (endpoint, query, cancelToken) => {
       'Content-Type': 'application/x-www-form-urlencoded'
       },
       data: getFormData({ query }), // using params instead of data because of urlencoded data
-      cancelToken: cancelToken
+      cancelToken: cancelToken,
+      timeout: 45000
     })
     .then((res) => {
       if (id === (nextId - 1) || id === (nextId - 2) || id === (nextId - 3)) {
@@ -265,5 +266,5 @@ export const executeQuery = (endpoint, query, cancelToken) => {
         return null
       }
     })
-    .catch( err => err ) // console.log(err)
+    .catch( err => console.log(err) )
 }

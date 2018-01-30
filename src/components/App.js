@@ -122,7 +122,9 @@ class App extends React.Component {
               loading: false
             })
           })
+          .catch( err => null )
       })
+      .catch( err => null )
   }
 
   addElementToQuery = (element, type) => {
