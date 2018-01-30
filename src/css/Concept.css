@@ -21,11 +21,12 @@ input.rounded {
     display: flex;
     border: 2px solid black;
     border-radius: 25px;
-    height: 50px;
     width: 100%;
-    padding-left: 10px;
+    max-height: 100px;
+    padding: 15px 0px 15px 15px;
     font-size: 24px;
     align-items: center;
+    overflow-y: auto;
 }
 
 .option {
