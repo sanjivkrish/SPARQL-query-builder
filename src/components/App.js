@@ -108,11 +108,11 @@ class App extends React.Component {
       } else {
         query.push(lastElement)
       }
+    // } else if (type === 'property' && query.length === 0) {
+    //   query.push({ type, element }) // push property onto query
+    //   query.push({ type: 'class', element: { value: 'thing' } })
     } else {
-      query.push({
-        type,
-        element
-      })
+      query.push({ type, element })
     }
     this.setState({
       query,

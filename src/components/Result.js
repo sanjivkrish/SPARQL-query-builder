@@ -16,10 +16,27 @@ class Result extends React.Component {
 								{
 									// create header from query
 									this.props.resultList.length > 0 ?
-										this.props.query.map((e, i) => {
-											const word = getLastUrlElement(e.element.value)
-											return <th key={i}>{word}</th>
-										}) : null
+										[...this.props.query] // create deep copy for sorting
+												.sort( (a, b) => { // sorting so that classes are the first elements in the array
+													if (a.type === 'class' && b.type !== 'class') {
+														return -1
+													} else if (a.type !== 'class' && b.type === 'class') {
+														return 1
+													} else {
+														return 0
+													}
+												})
+											.map((e, i) => {
+												const word = getLastUrlElement(e.element.value)
+												if (e.type === 'property' && i === 0) {
+													// If there are no classes but properties, add an extra label ("Thing") for the results that have these properties
+													return [ <th key={-1}>Thing</th>, <th key={i}>{word}</th> ] 
+												}
+												if (e.type === 'class' && i > 0) {
+													return null
+												}
+												return <th key={i}>{word}</th>
+											}) : null
 								}
 							</tr>
 						</thead>
