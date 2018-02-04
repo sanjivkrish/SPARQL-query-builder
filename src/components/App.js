@@ -181,11 +181,14 @@ class App extends React.Component {
           this.state.query.map( (c, i) => {
             let spanEle;
             const word = getLastUrlElement(c.element.value)
+            const firstLetterIsVowel = ['a', 'e', 'i', 'o', 'u'].indexOf(word[0].toLowerCase()) !== -1
             if (c.type === 'class') {
               if (i === 0) {
                 spanEle = <span key={c.element.value}> every <span className="selection class" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span></span>;
+              } else if (i === 1) {
+                spanEle = <span key={c.element.value}> that is also {firstLetterIsVowel ? 'an' : 'a'} <span className="selection class" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span></span>;
               } else {
-                spanEle = <span key={c.element.value}> that is also <span className="selection class" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span></span>;
+                spanEle = <span key={c.element.value}> and {firstLetterIsVowel ? 'an' : 'a'} <span className="selection class" onClick={() => this.removeElementFromQuery(c.element.value)}>{word}</span></span>;    
               }
             } else if (c.type === 'property') {
               spanEle = <span key={c.element.value}>{ i === 0 ? ' everything that has a property ' : ' and a property '}
@@ -193,7 +196,7 @@ class App extends React.Component {
                   <span> </span>
                   { c.object !== undefined ? 
                     <span className="selection object" onClick={() => this.removeElementFromQuery(c.object.value)}>
-                      ({getLastUrlElement(c.object.value).split('@')[0]})
+                      ({getLastUrlElement(c.object.value)})
                     </span> : null 
                   }
                 </span>;
