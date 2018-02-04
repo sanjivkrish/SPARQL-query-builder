@@ -116,7 +116,7 @@ class App extends React.Component {
             this.setState({
               resultList: result.filter( resultFilter ),
               classSuggestions: [],
-              propertySuggestions: properties,
+              propertySuggestions: properties || [],
               objectSuggestions: objects || [],
               cachedSuggestions: { propertySuggestions: properties, objectSuggestions: objects || [] },
               loading: false

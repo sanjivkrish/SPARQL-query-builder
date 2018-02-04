@@ -88,8 +88,8 @@ class Concept extends React.Component {
         this.props.cancelToken.cancel('Request outdated') // cancel all remaining open requests
         this.props.setCancelToken(axios.CancelToken.source()) // generate new cancelToken
         this.props.setSuggestions({
-          classSuggestions: classes.filter( filterFunction ),
-          propertySuggestions: properties.filter( filterFunction ),
+          classSuggestions: classes.filter( filterFunction ) || [],
+          propertySuggestions: properties.filter( filterFunction ) || [],
           objectSuggestions: objects ? objects.filter( filterFunction ) : []
         })
         this.props.setLoading(false)
